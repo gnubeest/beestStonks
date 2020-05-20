@@ -28,10 +28,10 @@
 
 ###
 
-import json
-import requests
 import urllib.request
 import urllib.parse
+import json
+import requests
 
 from supybot import utils, plugins, ircutils, callbacks
 from supybot.commands import *
@@ -51,7 +51,7 @@ class BeestStonks(callbacks.Plugin):
         """[<symbol.exchange>]
             Get current share prices.
         """
-        
+
         token = self.registryValue("finnhubKey")
         symbol = symbol.upper()
         try:
@@ -71,8 +71,8 @@ class BeestStonks(callbacks.Plugin):
 
         try:
             comp_nm = "\x036" + (company['exchange']) + ":\x0f " + (
-                                company['name']) + " (" + (
-                                company['ticker']) + ") "
+                company['name']) + " (" + (
+                    company['ticker']) + ") "
         except KeyError:
             comp_nm = ""
 
@@ -81,20 +81,21 @@ class BeestStonks(callbacks.Plugin):
         if comp_nm == "":
             payload = urllib.parse.urlencode({'token': token})
             ex_url = urllib.request.urlopen(
-                "https://finnhub.io/api/v1/stock/symbol?exchange=US&%s" % payload)
+                "https://finnhub.io/api/v1/stock/symbol?exchange=US&%s"
+                % payload)
             ex_sym = json.loads(ex_url.read().decode('utf-8'))
             for sym_ind in range(0, 20000):
                 search_sym = ex_sym[sym_ind]['symbol']
                 if search_sym == symbol:
                     comp_nm = "\x036" + (ex_sym[sym_ind]['description']) + (
-                                                "\x0f (" + search_sym + ") ")
+                        "\x0f (" + search_sym + ") ")
                     break
-                    
+
         qu_cur = "{:.2f} ".format(quote['c'])
         #qu_open = "{:.2f}".format(quote['o'])
         qu_hi = "{:.2f}".format(quote['h'])
         qu_lo = "{:.2f}".format(quote['l'])
-        qu_pc = (quote['pc'])
+        #qu_pc = (quote['pc'])
         qu_ch = ((quote['c']) - (quote['pc']))
         qu_chst = "{:.2f}".format(qu_ch)
         if qu_ch > 0:
@@ -102,12 +103,12 @@ class BeestStonks(callbacks.Plugin):
         elif qu_ch < 0:
             ch_sym = "\x0304↓"
         else:
-            ch_sym = "\x0315→"
+            ch_sym = "\x0302→"
             qu_chst = "unch"
 
-        irc.reply(comp_nm + qu_cur + ch_sym + 
-                    qu_chst.replace("-","") + bullet + "Hi " + qu_hi + 
-                    " Lo " + qu_lo)
+        irc.reply(comp_nm + qu_cur + ch_sym +
+                  qu_chst.replace("-", "") + bullet + "Hi " + qu_hi +
+                  " Lo " + qu_lo)
 
 
     stock = wrap(stock, ['somethingWithoutSpaces'])
