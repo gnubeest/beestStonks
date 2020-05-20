@@ -52,6 +52,7 @@ class BeestStonks(callbacks.Plugin):
             Get current share prices.
         """
 
+        # match input with symbol, get company name
         token = self.registryValue("finnhubKey")
         symbol = symbol.upper()
         try:
@@ -67,30 +68,38 @@ class BeestStonks(callbacks.Plugin):
             irc.reply("Error 02: Invalid or unknown symbol or exchange")
             return
 
-        bullet = " \x036•\x0f "
+        # separate symbol and exchange from input
+        if symbol.find('.') != -1:
+            sym_sep = symbol[:symbol.find('.')]
+            exc_sep = symbol[(symbol.find('.') + 1):]
+        else:
+            sym_sep = symbol
+            exc_sep = ""
 
+        # name workaround for symbols with no company lookups
+        # (usually certain funds and B/C stocks)
         try:
             comp_nm = "\x036" + (company['exchange']) + ":\x0f " + (
-                company['name']) + " (" + (
-                    company['ticker']) + ") "
+                company['name']) + " (" + sym_sep + ") "
         except KeyError:
             comp_nm = ""
-
-        # workaround for US symbols with no company lookups
-        # probably crashes if doing an actual .us lookup
         if comp_nm == "":
-            payload = urllib.parse.urlencode({'token': token})
+            if exc_sep == "":
+                exc_sep = "US"
+            payload = urllib.parse.urlencode(
+                {'exchange': exc_sep, 'token': token})
             ex_url = urllib.request.urlopen(
-                "https://finnhub.io/api/v1/stock/symbol?exchange=US&%s"
+                "https://finnhub.io/api/v1/stock/symbol?%s"
                 % payload)
             ex_sym = json.loads(ex_url.read().decode('utf-8'))
             for sym_ind in range(0, 20000):
                 search_sym = ex_sym[sym_ind]['symbol']
-                if search_sym == symbol:
+                if search_sym == sym_sep:
                     comp_nm = "\x036" + (ex_sym[sym_ind]['description']) + (
                         "\x0f (" + search_sym + ") ")
                     break
 
+        # format prices, calculate change since close
         qu_cur = "{:.2f} ".format(quote['c'])
         #qu_open = "{:.2f}".format(quote['o'])
         qu_hi = "{:.2f}".format(quote['h'])
@@ -106,6 +115,8 @@ class BeestStonks(callbacks.Plugin):
             ch_sym = "\x0302→"
             qu_chst = "unch"
 
+        # render final output
+        bullet = " \x036•\x0f "
         irc.reply(comp_nm + qu_cur + ch_sym +
                   qu_chst.replace("-", "") + bullet + "Hi " + qu_hi +
                   " Lo " + qu_lo)
