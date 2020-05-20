@@ -79,7 +79,7 @@ class BeestStonks(callbacks.Plugin):
 
         try:
             comp_nm = "\x036" + (company['exchange']) + ":\x0f " + (
-                company['name']) + " (" + sym_sep + ") "
+                company['name']) + " (" + sym_sep + ")"
         # name workaround for symbols with no company lookups
         # (usually certain funds and B/C stocks)
         except KeyError:
@@ -91,12 +91,16 @@ class BeestStonks(callbacks.Plugin):
                 "https://finnhub.io/api/v1/stock/symbol?%s"
                 % payload)
             ex_sym = json.loads(ex_url.read().decode('utf-8'))
-            for sym_ind in range(0, 20000):
-                search_sym = ex_sym[sym_ind]['symbol']
-                if search_sym == sym_sep:
-                    comp_nm = "\x036" + (ex_sym[sym_ind]['description']) + (
-                        "\x0f (" + search_sym + ") ")
-                    break
+            try:
+                for sym_ind in range(0, 20000):
+                    search_sym = ex_sym[sym_ind]['symbol']
+                    if search_sym == sym_sep:
+                        comp_nm = "\x036Special:\x0f " + (ex_sym[sym_ind]['description']) + (
+                            "\x0f (" + search_sym + ")")
+                        break
+            except IndexError:
+                irc.reply("Error 03: Symbol unavailable")
+                return
 
         # format prices, calculate change since close
         qu_cur = "{:.2f} ".format(quote['c'])
@@ -108,18 +112,18 @@ class BeestStonks(callbacks.Plugin):
         qu_chpcst = "{:.2f}".format(((qu_ch / (quote['pc'])) * 100))
         qu_chst = "{:.2f}".format(qu_ch)
         if qu_ch > 0:
-            ch_sym = "\x0303↑"
+            ch_sym = ("\x0303▲" + qu_chst.replace("-", "") + " (" +
+                qu_chpcst.replace("-", "") + "%)")
         elif qu_ch < 0:
-            ch_sym = "\x0304↓"
+            ch_sym = ("\x0304▼" + qu_chst.replace("-", "") + " (" +
+                qu_chpcst.replace("-", "") + "%)")
         else:
-            ch_sym = "\x0302→"
-            qu_chst = "unch"
-
+            ch_sym = "\x0302→unch"
+        
         # render final output
         bullet = " \x036•\x0f "
-        irc.reply(comp_nm + qu_cur + ch_sym + qu_chst.replace("-", "") + " (" +
-            qu_chpcst.replace("-", "") + "%)" + bullet + "Hi " + qu_hi +
-            " Lo " + qu_lo)
+        irc.reply(comp_nm + bullet + qu_cur + ch_sym + bullet + "Day " +
+            qu_lo + " - " + qu_hi)
 
     stock = wrap(stock, ['somethingWithoutSpaces'])
 
