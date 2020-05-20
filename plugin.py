@@ -69,6 +69,7 @@ class BeestStonks(callbacks.Plugin):
             return
 
         # separate symbol and exchange from input
+        # (so workarounds don't break and for later features)
         if symbol.find('.') != -1:
             sym_sep = symbol[:symbol.find('.')]
             exc_sep = symbol[(symbol.find('.') + 1):]
@@ -104,6 +105,7 @@ class BeestStonks(callbacks.Plugin):
         qu_lo = "{:.2f}".format(quote['l'])
         #qu_pc = (quote['pc'])
         qu_ch = ((quote['c']) - (quote['pc']))
+        qu_chpcst = "{:.2f}".format(((qu_ch / (quote['pc'])) * 100))
         qu_chst = "{:.2f}".format(qu_ch)
         if qu_ch > 0:
             ch_sym = "\x0303↑"
@@ -115,9 +117,9 @@ class BeestStonks(callbacks.Plugin):
 
         # render final output
         bullet = " \x036•\x0f "
-        irc.reply(comp_nm + qu_cur + ch_sym +
-                  qu_chst.replace("-", "") + bullet + "Hi " + qu_hi +
-                  " Lo " + qu_lo)
+        irc.reply(comp_nm + qu_cur + ch_sym + qu_chst.replace("-", "") + " (" +
+            qu_chpcst.replace("-", "") + "%)" + bullet + "Hi " + qu_hi +
+            " Lo " + qu_lo)
 
     stock = wrap(stock, ['somethingWithoutSpaces'])
 
