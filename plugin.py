@@ -76,14 +76,12 @@ class BeestStonks(callbacks.Plugin):
             sym_sep = symbol
             exc_sep = ""
 
-        # name workaround for symbols with no company lookups
-        # (usually certain funds and B/C stocks)
         try:
             comp_nm = "\x036" + (company['exchange']) + ":\x0f " + (
                 company['name']) + " (" + sym_sep + ") "
+        # name workaround for symbols with no company lookups
+        # (usually certain funds and B/C stocks)
         except KeyError:
-            comp_nm = ""
-        if comp_nm == "":
             if exc_sep == "":
                 exc_sep = "US"
             payload = urllib.parse.urlencode(
@@ -120,7 +118,6 @@ class BeestStonks(callbacks.Plugin):
         irc.reply(comp_nm + qu_cur + ch_sym +
                   qu_chst.replace("-", "") + bullet + "Hi " + qu_hi +
                   " Lo " + qu_lo)
-
 
     stock = wrap(stock, ['somethingWithoutSpaces'])
 
