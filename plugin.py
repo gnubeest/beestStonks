@@ -80,27 +80,8 @@ class BeestStonks(callbacks.Plugin):
         try:
             comp_nm = "\x036" + (company['exchange']) + ":\x0f " + (
                 company['name']) + " (" + sym_sep + ")"
-        # name workaround for symbols with no company lookups
-        # (usually certain funds and B/C stocks)
         except KeyError:
-            if exc_sep == "":
-                exc_sep = "US"
-            payload = urllib.parse.urlencode(
-                {'exchange': exc_sep, 'token': token})
-            ex_url = urllib.request.urlopen(
-                "https://finnhub.io/api/v1/stock/symbol?%s"
-                % payload)
-            ex_sym = json.loads(ex_url.read().decode('utf-8'))
-            try:
-                for sym_ind in range(0, 20000):
-                    search_sym = ex_sym[sym_ind]['symbol']
-                    if search_sym == sym_sep:
-                        comp_nm = "\x036" + (ex_sym[sym_ind]['description']) + (
-                            "\x0f (" + search_sym + ")")
-                        break
-            # even lamer workaround to fetch market index names
-            # should probably do this first but whatever
-            except IndexError:
+                # lame workaround to fetch market index names
                 payload = urllib.parse.urlencode({'token': token})
                 ex_url = urllib.request.urlopen(
                 "https://finnhub.io/api/v1/stock/symbol?exchange=indices&%s" % payload)
@@ -114,7 +95,25 @@ class BeestStonks(callbacks.Plugin):
                                 "^", "") + ")"
                             break
                 except IndexError:
-                    comp_nm = "\x036Special:\x0f " + symbol
+                    # even lamer workaround for symbols with no company lookups
+                    # (usually certain funds and B/C stocks)
+                    if exc_sep == "":
+                        exc_sep = "US"
+                    payload = urllib.parse.urlencode(
+                        {'exchange': exc_sep, 'token': token})
+                    ex_url = urllib.request.urlopen(
+                        "https://finnhub.io/api/v1/stock/symbol?%s"
+                        % payload)
+                    ex_sym = json.loads(ex_url.read().decode('utf-8'))
+                    try:
+                        for sym_ind in range(0, 20000):
+                            search_sym = ex_sym[sym_ind]['symbol']
+                            if search_sym == sym_sep:
+                                comp_nm = "\x036" + (ex_sym[sym_ind]['description']) + (
+                                    "\x0f (" + search_sym + ")")
+                                break
+                    except IndexError:
+                            comp_nm = "\x036Special:\x0f " + symbol
 
         # format prices, calculate change since close
         qu_cur = "{:.2f} ".format(quote['c'])
