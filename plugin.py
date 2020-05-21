@@ -95,12 +95,26 @@ class BeestStonks(callbacks.Plugin):
                 for sym_ind in range(0, 20000):
                     search_sym = ex_sym[sym_ind]['symbol']
                     if search_sym == sym_sep:
-                        comp_nm = "\x036Special:\x0f " + (ex_sym[sym_ind]['description']) + (
+                        comp_nm = "\x036" + (ex_sym[sym_ind]['description']) + (
                             "\x0f (" + search_sym + ")")
                         break
+            # even lamer workaround to fetch market index names
+            # should probably do this first but whatever
             except IndexError:
-                irc.reply("Error 03: Symbol unavailable")
-                return
+                payload = urllib.parse.urlencode({'token': token})
+                ex_url = urllib.request.urlopen(
+                "https://finnhub.io/api/v1/stock/symbol?exchange=indices&%s" % payload)
+                ex_sym = json.loads(ex_url.read().decode('utf-8'))
+                try:
+                    for sym_ind in range(0, 200):
+                        search_sym = ex_sym[sym_ind]['symbol']
+                        if search_sym == symbol:
+                            comp_nm = "\x036" + (ex_sym[sym_ind]
+                                ['description']) + "\x0f (" + symbol.replace(
+                                "^", "") + ")"
+                            break
+                except IndexError:
+                    comp_nm = "\x036Special:\x0f " + symbol
 
         # format prices, calculate change since close
         qu_cur = "{:.2f} ".format(quote['c'])
