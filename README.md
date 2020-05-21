@@ -12,10 +12,60 @@ Usage: `stock <symbol.exchange>`
 Exchange is optional, omitting it tends to lean toward US markets. Will do the
 best it can to fetch things like ETFs, ADRs, and B/C stocks gracefully.
 
-List of exchange codes (subject to change):
+
+Index lookup codes (subject to change):
+```
+"description":"S\u0026P 500","displaySymbol":"^GSPC","symbol":"^GSPC"
+"description":"Dow 30","displaySymbol":"^DJI","symbol":"^DJI"
+"description":"Nasdaq","displaySymbol":"^IXIC","symbol":"^IXIC"
+"description":"NYSE COMPOSITE (DJ)","displaySymbol":"^NYA","symbol":"^NYA"
+"description":"NYSE AMEX COMPOSITE INDEX","displaySymbol":"^XAX","symbol":"^XAX"
+"description":"Cboe UK 100 Price Return","displaySymbol":"^BUK100P","symbol":"^BUK100P"
+"description":"Russell 2000","displaySymbol":"^RUT","symbol":"^RUT"
+"description":"FTSE 100","displaySymbol":"^FTSE","symbol":"^FTSE"
+"description":"DAX PERFORMANCE-INDEX","displaySymbol":"^GDAXI","symbol":"^GDAXI"
+"description":"CAC 40","displaySymbol":"^FCHI","symbol":"^FCHI"
+"description":"ESTX 50 PR.EUR","displaySymbol":"^STOXX50E","symbol":"^STOXX50E"
+"description":"EURONEXT 100","displaySymbol":"^N100","symbol":"^N100"
+"description":"BEL 20","displaySymbol":"^BFX","symbol":"^BFX"
+"description":"MOEX Russia Index","displaySymbol":"IMOEX.ME","symbol":"IMOEX.ME"
+"description":"Nikkei 225","displaySymbol":"^N225","symbol":"^N225"
+"description":"HANG SENG INDEX","displaySymbol":"^HSI","symbol":"^HSI"
+"description":"SSE Composite Index","displaySymbol":"000001.SS","symbol":"000001.SS"
+"description":"STI Index","displaySymbol":"^STI","symbol":"^STI"
+"description":"S\u0026P/ASX 200","displaySymbol":"^AXJO","symbol":"^AXJO"
+"description":"ALL ORDINARIES","displaySymbol":"^AORD","symbol":"^AORD"
+"description":"S\u0026P BSE SENSEX","displaySymbol":"^BSESN","symbol":"^BSESN"
+"description":"Jakarta Composite Index","displaySymbol":"^JKSE","symbol":"^JKSE"
+"description":"FTSE Bursa Malaysia KLCI","displaySymbol":"^KLSE","symbol":"^KLSE"
+"description":"S\u0026P/NZX 50 INDEX GROSS","displaySymbol":"^NZ50","symbol":"^NZ50"
+"description":"KOSPI Composite Index","displaySymbol":"^KS11","symbol":"^KS11"
+"description":"TSEC weighted index","displaySymbol":"^TWII","symbol":"^TWII"
+"description":"S\u0026P/TSX Composite index","displaySymbol":"^GSPTSE","symbol":"^GSPTSE"
+"description":"IBOVESPA","displaySymbol":"^BVSP","symbol":"^BVSP"
+"description":"IPC MEXICO","displaySymbol":"^MXX","symbol":"^MXX"
+"description":"IPSA SANTIAGO DE CHILE","displaySymbol":"^IPSA","symbol":"^IPSA"
+"description":"MERVAL","displaySymbol":"^MERV","symbol":"^MERV"
+"description":"TA-125","displaySymbol":"^TA125.TA","symbol":"^TA125.TA"
+"description":"EGX 30 Price Return Index","displaySymbol":"^CASE30","symbol":"^CASE30"
+"description":"Top 40 USD Net TRI Index","displaySymbol":"^JN0U.JO","symbol":"^JN0U.JO"
+"description":"CBOE Volatility Index","displaySymbol":"^VIX","symbol":"^VIX"
+"description":"Nasdaq 100","displaySymbol":"^NDX","symbol":"^NDX"
+"description":"Nifty 50","displaySymbol":"^NSEI","symbol":"^NSEI"
+"description":"IBEX 35","displaySymbol":"^IBEX","symbol":"^IBEX"
+"description":"Dow Jones Transportation","displaySymbol":"^DJT","symbol":"^DJT"
+"description":"S\u0026P Transportation Select Industry","displaySymbol":"^SPSITNTR","symbol":"^SPSITNTR"
+"description":"NASDAQ Transportation","displaySymbol":"^TRAN","symbol":"^TRAN"
+"description":"VNINDEX","displaySymbol":"VNINDEX.VN","symbol":"VNINDEX.VN"
+"description":"VN30","displaySymbol":"VN30.VN","symbol":"VN30.VN"
+"description":"HNX","displaySymbol":"HNX.VN","symbol":"HNX.VN"
+"description":"HNX30","displaySymbol":"HNX30.VN","symbol":"HNX30.VN"
+"description":"UPCOM","displaySymbol":"UPCOM.VN","symbol":"UPCOM.VN"
+```
+
+Exchange codes:
 ```
 "code":"mutualFund","currency":"USD","name":"US Mutual funds"
-"code":"indices","currency":"","name":"World Indices"
 "code":"US","currency":"USD","name":"US exchanges"
 "code":"HM","currency":"EUR","name":"HANSEATISCHE WERTPAPIERBOERSE HAMBURG"
 "code":"BD","currency":"HUF","name":"BUDAPEST STOCK EXCHANGE"
