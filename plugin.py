@@ -52,9 +52,40 @@ class BeestStonks(callbacks.Plugin):
             Get current share prices.
         """
 
-        # match input with symbol, get company name
         token = self.registryValue("finnhubKey")
         symbol = symbol.upper()
+        bullet = " \x036•\x0f "
+
+        if symbol == "INDICES":
+            ind_list = ['^DJI', '^IXIC', '^GSPC', '^FTSE', '^GDAXI', '^N225', '^HSI']
+            ind_name = ['DJIA', 'NASDAQ', 'S&P', 'FTSE', 'DAX', 'Nikkei', 'Hang Seng']
+            ind_c_lst = []
+            ind_pc_lst = []
+            ind_string = ''
+            for ind_get in ind_list:
+                payload = urllib.parse.urlencode(
+                    {'symbol': ind_get, 'token': token})
+                ind_fetch = (urllib.request.urlopen(
+                    "https://finnhub.io/api/v1/quote?%s" % payload))
+                ind_dec = json.loads(ind_fetch.read().decode('utf-8'))
+                ind_c_lst.append(ind_dec['c'])
+                ind_pc_lst.append(ind_dec['pc'])
+            for ind_index in range(0, 7):
+                qu_cur = "{:.0f} ".format(ind_c_lst[ind_index])
+                qu_ch = ((ind_c_lst[ind_index]) - (ind_pc_lst[ind_index]))
+                qu_chst = "{:.0f}".format(qu_ch)
+                if qu_ch > 0:
+                    ch_sym = ("\x0303▲" + qu_chst.replace("-", ""))
+                elif qu_ch < 0:
+                    ch_sym = ("\x0304▼" + qu_chst.replace("-", ""))
+                else:
+                    ch_sym = "\x0302▰unch"
+                ind_string = (ind_string + bullet + "\x036" + ind_name[ind_index] +
+                    "\x0f " + qu_cur + ch_sym)
+            irc.reply("\x0303beestDex" + ind_string)
+            return
+
+        # match input with symbol, get company name
         try:
             payload = urllib.parse.urlencode(
                 {'symbol': symbol, 'token': token})
@@ -84,7 +115,8 @@ class BeestStonks(callbacks.Plugin):
                 # lame workaround to fetch market index names
                 payload = urllib.parse.urlencode({'token': token})
                 ex_url = urllib.request.urlopen(
-                "https://finnhub.io/api/v1/stock/symbol?exchange=indices&%s" % payload)
+                "https://finnhub.io/api/v1/stock/symbol?exchange=indices&%s"
+                % payload)
                 ex_sym = json.loads(ex_url.read().decode('utf-8'))
                 try:
                     for sym_ind in range(0, 200):
@@ -109,7 +141,8 @@ class BeestStonks(callbacks.Plugin):
                         for sym_ind in range(0, 20000):
                             search_sym = ex_sym[sym_ind]['symbol']
                             if search_sym == sym_sep:
-                                comp_nm = "\x036" + (ex_sym[sym_ind]['description']) + (
+                                comp_nm = "\x036" + (ex_sym[sym_ind]
+                                    ['description']) + (
                                     "\x0f (" + search_sym + ")")
                                 break
                     except IndexError:
@@ -122,7 +155,7 @@ class BeestStonks(callbacks.Plugin):
         qu_lo = "{:.2f}".format(quote['l'])
         #qu_pc = (quote['pc'])
         qu_ch = ((quote['c']) - (quote['pc']))
-        qu_chpcst = "{:.2f}".format(((qu_ch / (quote['pc'])) * 100))
+        qu_chpcst = "{:.0f}".format(((qu_ch / (quote['pc'])) * 100))
         qu_chst = "{:.2f}".format(qu_ch)
         if qu_ch > 0:
             ch_sym = ("\x0303▲" + qu_chst.replace("-", "") + " (" +
@@ -131,11 +164,10 @@ class BeestStonks(callbacks.Plugin):
             ch_sym = ("\x0304▼" + qu_chst.replace("-", "") + " (" +
                 qu_chpcst.replace("-", "") + "%)")
         else:
-            ch_sym = "\x0302→unch"
-        
+            ch_sym = "\x0302▰unch"
+ 
         # render final output
-        bullet = " \x036•\x0f "
-        irc.reply(comp_nm + bullet + qu_cur + ch_sym + bullet + "Day " +
+        irc.reply(comp_nm + bullet + qu_cur + ch_sym + bullet +
             qu_lo + " - " + qu_hi)
 
     stock = wrap(stock, ['somethingWithoutSpaces'])
