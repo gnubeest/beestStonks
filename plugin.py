@@ -150,14 +150,18 @@ class BeestStonks(callbacks.Plugin):
                             comp_nm = "\x036Special:\x0f " + symbol
 
         # format prices, calculate change since close
-        qu_cur = "{:.2f} ".format(quote['c'])
-        #qu_open = "{:.2f}".format(quote['o'])
-        qu_hi = "{:.2f}".format(quote['h'])
-        qu_lo = "{:.2f}".format(quote['l'])
-        #qu_pc = (quote['pc'])
         qu_ch = ((quote['c']) - (quote['pc']))
+        if quote['c'] < 1:
+            qu_cur = "{:.4f} ".format(quote['c'])
+            qu_chst = "{:.4f}".format(qu_ch)
+            qu_hi = "{:.4f}".format(quote['h'])
+            qu_lo = "{:.4f}".format(quote['l'])
+        else:
+            qu_cur = "{:.2f} ".format(quote['c'])
+            qu_chst = "{:.2f}".format(qu_ch)
+            qu_hi = "{:.2f}".format(quote['h'])
+            qu_lo = "{:.2f}".format(quote['l'])
         qu_chpcst = "{:.0f}".format(((qu_ch / (quote['pc'])) * 100))
-        qu_chst = "{:.2f}".format(qu_ch)
         if qu_ch > 0:
             ch_sym = ("\x0303▲" + qu_chst.replace("-", "") + " (" +
                 qu_chpcst.replace("-", "") + "%)")
