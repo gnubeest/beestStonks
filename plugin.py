@@ -56,6 +56,7 @@ class BeestStonks(callbacks.Plugin):
         symbol = symbol.upper()
         bullet = " \x036•\x0f "
 
+        # make silly summary of popular market indices
         if symbol == "INDICES":
             ind_list = ['^DJI', '^IXIC', '^GSPC', '^FTSE', '^GDAXI', '^N225', '^HSI']
             ind_name = ['DJIA', 'NASDAQ', 'S&P', 'FTSE', 'DAX', 'Nikkei', 'Hang Seng']
@@ -99,11 +100,11 @@ class BeestStonks(callbacks.Plugin):
             irc.reply("Error 02: Invalid or unknown symbol or exchange")
             return
 
-        # separate symbol and exchange from input
-        # (so workarounds don't break and for later features)
-        if symbol.find('.') != -1:
-            sym_sep = symbol[:symbol.find('.')]
-            exc_sep = symbol[(symbol.find('.') + 1):]
+        # separate symbol and exchange from input for display
+        # also so workarounds don't break and for later features
+        if symbol.rfind('.') != -1:
+            sym_sep = symbol[:symbol.rfind('.')]
+            exc_sep = symbol[(symbol.rfind('.') + 1):]
         else:
             sym_sep = symbol
             exc_sep = ""
