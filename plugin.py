@@ -156,7 +156,11 @@ class BeestStonks(callbacks.Plugin):
             qu_chst = "{:.2f}".format(qu_ch)
             qu_hi = "{:.2f}".format(quote['h'])
             qu_lo = "{:.2f}".format(quote['l'])
-        qu_chpcst = "{:.1f}".format(((qu_ch / (quote['pc'])) * 100))
+            qu_chpc = ((qu_ch / (quote['pc'])) * 100)
+            if abs(qu_chpc) < 0.9:
+                qu_chpcst = "{:.1f}".format(qu_chpc)
+            else:
+                qu_chpcst = "{:.0f}".format(qu_chpc)
         if qu_ch > 0:
             ch_sym = "\x0303▲"
         elif qu_ch < 0:
