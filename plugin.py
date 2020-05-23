@@ -28,9 +28,6 @@
 
 ###
 
-import urllib.request
-import urllib.parse
-import json
 import requests
 
 from supybot import utils, plugins, ircutils, callbacks
@@ -58,17 +55,18 @@ class BeestStonks(callbacks.Plugin):
 
         # make silly summary of popular market indices
         if symbol == "INDICES":
-            ind_list = ['^DJI', '^IXIC', '^GSPC', '^FTSE', '^GDAXI', '^N225', '^HSI']
-            ind_name = ['DJIA', 'NASDAQ', 'S&P', 'FTSE', 'DAX', 'Nikkei', 'Hang Seng']
+            ind_list = ['^DJI', '^IXIC', '^GSPC', '^FTSE', '^GDAXI', '^N225',
+                 '^HSI']
+            ind_name = ['DJIA', 'NASDAQ', 'S&P', 'FTSE', 'DAX', 'Nikkei',
+                'Hang Seng']
             ind_c_lst = []
             ind_pc_lst = []
             ind_string = ''
             for ind_get in ind_list:
-                payload = urllib.parse.urlencode(
-                    {'symbol': ind_get, 'token': token})
-                ind_fetch = (urllib.request.urlopen(
-                    "https://finnhub.io/api/v1/quote?%s" % payload))
-                ind_dec = json.loads(ind_fetch.read().decode('utf-8'))
+                payload = {'symbol': ind_get, 'token': token}
+                ind_fetch = requests.get('https://finnhub.io/api/v1/quote',
+                    params=payload)
+                ind_dec = ind_fetch.json()
                 ind_c_lst.append(ind_dec['c'])
                 ind_pc_lst.append(ind_dec['pc'])
             for ind_index in range(0, 7):
@@ -87,18 +85,13 @@ class BeestStonks(callbacks.Plugin):
             return
 
         # match input with symbol, get company name
-        try:
-            payload = urllib.parse.urlencode(
-                {'symbol': symbol, 'token': token})
-            quote_url = (urllib.request.urlopen(
-                "https://finnhub.io/api/v1/quote?%s" % payload))
-            company_url = (urllib.request.urlopen(
-                "https://finnhub.io/api/v1/stock/profile2?%s" % payload))
-            quote = json.loads(quote_url.read().decode('utf-8'))
-            company = json.loads(company_url.read().decode('utf-8'))
-        except json.decoder.JSONDecodeError:
-            irc.reply("Error 02: Invalid or unknown symbol or exchange")
-            return
+        payload = {'symbol': symbol, 'token': token}
+        quote_url = requests.get('https://finnhub.io/api/v1/quote',
+            params=payload)
+        company_url = requests.get(
+            'https://finnhub.io/api/v1/stock/profile2', params=payload)
+        quote = quote_url.json()
+        company = company_url.json()
 
         # separate symbol and exchange from input for display
         # also so workarounds don't break and for later features
@@ -114,11 +107,10 @@ class BeestStonks(callbacks.Plugin):
                 company['name']) + " (" + sym_sep + ")"
         except KeyError:
                 # lame workaround to fetch market index names
-                payload = urllib.parse.urlencode({'token': token})
-                ex_url = urllib.request.urlopen(
-                "https://finnhub.io/api/v1/stock/symbol?exchange=indices&%s"
-                % payload)
-                ex_sym = json.loads(ex_url.read().decode('utf-8'))
+                payload = {'exchange': 'indices', 'token': token}
+                ex_url = requests.get(
+                    'https://finnhub.io/api/v1/stock/symbol', params=payload)
+                ex_sym = ex_url.json()
                 try:
                     for sym_ind in range(0, 200):
                         search_sym = ex_sym[sym_ind]['symbol']
@@ -132,12 +124,11 @@ class BeestStonks(callbacks.Plugin):
                     # (usually certain funds and B/C stocks)
                     if exc_sep == "":
                         exc_sep = "US"
-                    payload = urllib.parse.urlencode(
-                        {'exchange': exc_sep, 'token': token})
-                    ex_url = urllib.request.urlopen(
-                        "https://finnhub.io/api/v1/stock/symbol?%s"
-                        % payload)
-                    ex_sym = json.loads(ex_url.read().decode('utf-8'))
+                    payload = {'exchange': exc_sep, 'token': token}
+                    ex_url = requests.get(
+                        'https://finnhub.io/api/v1/stock/symbol',
+                        params=payload)
+                    ex_sym = ex_url.json()
                     try:
                         for sym_ind in range(0, 20000):
                             search_sym = ex_sym[sym_ind]['symbol']
@@ -150,7 +141,11 @@ class BeestStonks(callbacks.Plugin):
                             comp_nm = "\x036Special:\x0f " + symbol
 
         # format prices, calculate change since close
-        qu_ch = ((quote['c']) - (quote['pc']))
+        try:
+            qu_ch = ((quote['c']) - (quote['pc']))
+        except KeyError:
+            irc.reply("Error 02: Invalid or unknown symbol or exchange")
+            return
         if quote['c'] < 1:
             qu_cur = "{:.4f} ".format(quote['c'])
             qu_chst = "{:.4f}".format(qu_ch)

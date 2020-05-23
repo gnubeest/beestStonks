@@ -34,10 +34,7 @@ BeestStonks: Retrieves market data from Finnhub
 
 import sys
 import supybot
-import json
 import requests
-import urllib.request
-import urllib.parse
 from supybot import world
 
 # Use this for the version of this plugin.
@@ -64,10 +61,7 @@ reload(config)
 reload(plugin)
 # Add more reloads here if you add third-party modules and want them to be
 # reloaded when this plugin is reloaded.  Don't forget to import them as well!
-reload(json)
 reload(requests)
-reload(urllib.request)
-reload(urllib.parse)
 
 if world.testing:
     from . import test

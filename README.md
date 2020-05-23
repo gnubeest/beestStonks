@@ -2,7 +2,7 @@
 
 ## a plugin for Limnoria that fetches market info
 
-### requires Python 3, Limnoria, a Finnhub API key, and probably json
+### requires Python 3, Limnoria, a Finnhub API key, and requests
 
 
 Still a work in progress, but mostly not broken.
