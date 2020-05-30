@@ -147,15 +147,13 @@ class BeestStonks(callbacks.Plugin):
             irc.reply("Error 02: Invalid or unknown symbol or exchange")
             return
         if quote['c'] < 5:
-            qu_cur = "{:.4f} ".format(quote['c'])
-            qu_chst = "{:.4f}".format(qu_ch)
-            qu_hi = "{:.4f}".format(quote['h'])
-            qu_lo = "{:.4f}".format(quote['l'])
+            qu_rnd = "{:.4f}"
         else:
-            qu_cur = "{:.2f} ".format(quote['c'])
-            qu_chst = "{:.2f}".format(qu_ch)
-            qu_hi = "{:.2f}".format(quote['h'])
-            qu_lo = "{:.2f}".format(quote['l'])
+            qu_rnd = "{:.2f}"
+        qu_cur = (qu_rnd + " ").format(quote['c'])
+        qu_chst = qu_rnd.format(qu_ch)
+        qu_hi = qu_rnd.format(quote['h'])
+        qu_lo = qu_rnd.format(quote['l'])
         qu_chpc = ((qu_ch / (quote['pc'])) * 100)
         if abs(qu_chpc) < 0.9:
             qu_chpcst = "{:.1f}".format(qu_chpc)
