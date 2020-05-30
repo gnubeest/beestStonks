@@ -146,7 +146,7 @@ class BeestStonks(callbacks.Plugin):
         except KeyError:
             irc.reply("Error 02: Invalid or unknown symbol or exchange")
             return
-        if quote['c'] < 1:
+        if quote['c'] < 5:
             qu_cur = "{:.4f} ".format(quote['c'])
             qu_chst = "{:.4f}".format(qu_ch)
             qu_hi = "{:.4f}".format(quote['h'])
@@ -167,8 +167,8 @@ class BeestStonks(callbacks.Plugin):
             ch_sym = "\x0304▼"
         else:
             ch_sym = "\x0302▰unch"
-        ch_pcren = (qu_chst.replace("-", "") + " (" +
-            qu_chpcst.replace("-", "") + "%)")
+        ch_pcren = (qu_chst + " (" +
+            qu_chpcst + "%)").replace("-", "")
  
         # render final output
         irc.reply(comp_nm + bullet + qu_cur + ch_sym + ch_pcren + bullet +
