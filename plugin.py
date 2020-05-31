@@ -146,7 +146,7 @@ class BeestStonks(callbacks.Plugin):
         except KeyError:
             irc.reply("Error 02: Invalid or unknown symbol or exchange")
             return
-        if quote['c'] < 5:
+        if quote['c'] < 1:
             qu_rnd = "{:.4f}"
         else:
             qu_rnd = "{:.2f}"
