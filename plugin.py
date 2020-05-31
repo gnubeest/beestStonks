@@ -159,14 +159,15 @@ class BeestStonks(callbacks.Plugin):
             qu_chpcst = "{:.1f}".format(qu_chpc)
         else:
             qu_chpcst = "{:.0f}".format(qu_chpc)
+        ch_pcren = (qu_chst + " (" +
+            qu_chpcst + "%)").replace("-", "")
         if qu_ch > 0:
             ch_sym = "\x0303▲"
         elif qu_ch < 0:
             ch_sym = "\x0304▼"
         else:
             ch_sym = "\x0302▰unch"
-        ch_pcren = (qu_chst + " (" +
-            qu_chpcst + "%)").replace("-", "")
+            ch_pcren = ""
  
         # render final output
         irc.reply(comp_nm + bullet + qu_cur + ch_sym + ch_pcren + bullet +
