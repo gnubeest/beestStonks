@@ -46,26 +46,28 @@ class BeestStonks(callbacks.Plugin):
 
     def stock(self, irc, msg, args, symbol):
         """[<symbol.exchange>]
-            Get current share prices.
+            Get current market share/index prices.
         """
 
+        # fetch finnhub.io API key from plugin config
         token = self.registryValue("finnhubKey")
+
         symbol = symbol.upper()
         bullet = " \x036•\x0f "
 
         # make silly summary of popular market indices
         if symbol == "INDICES":
             ind_list = ['^DJI', '^IXIC', '^GSPC', '^FTSE', '^GDAXI', '^N225',
-                 '^HSI']
+                        '^HSI']
             ind_name = ['DJIA', 'NASDAQ', 'S&P', 'FTSE', 'DAX', 'Nikkei',
-                'Hang Seng']
+                        'Hang Seng']
             ind_c_lst = []
             ind_pc_lst = []
             ind_string = ''
             for ind_get in ind_list:
                 payload = {'symbol': ind_get, 'token': token}
                 ind_fetch = requests.get('https://finnhub.io/api/v1/quote',
-                    params=payload)
+                                         params=payload)
                 ind_dec = ind_fetch.json()
                 ind_c_lst.append(ind_dec['c'])
                 ind_pc_lst.append(ind_dec['pc'])
@@ -80,14 +82,14 @@ class BeestStonks(callbacks.Plugin):
                 else:
                     ch_sym = "\x0302▰unch"
                 ind_string = (ind_string + bullet + "\x036" + ind_name[ind_index] +
-                    "\x0f " + qu_cur + ch_sym)
+                              "\x0f " + qu_cur + ch_sym)
             irc.reply("\x0303beestDex" + ind_string)
             return
 
-        # match input with symbol, get company name
+        # match input with symbol, get price and company name
         payload = {'symbol': symbol, 'token': token}
         quote_url = requests.get('https://finnhub.io/api/v1/quote',
-            params=payload)
+                                 params=payload)
         company_url = requests.get(
             'https://finnhub.io/api/v1/stock/profile2', params=payload)
         quote = quote_url.json()
@@ -106,47 +108,47 @@ class BeestStonks(callbacks.Plugin):
             comp_nm = "\x036" + (company['exchange']) + ":\x0f " + (
                 company['name']) + " (" + sym_sep + ")"
         except KeyError:
-                # lame workaround to fetch market index names
-                payload = {'exchange': 'indices', 'token': token}
+            # lame workaround to fetch market index names
+            payload = {'exchange': 'indices', 'token': token}
+            ex_url = requests.get(
+                'https://finnhub.io/api/v1/stock/symbol', params=payload)
+            ex_sym = ex_url.json()
+            try:
+                for sym_ind in range(0, 200):
+                    search_sym = ex_sym[sym_ind]['symbol']
+                    if search_sym == symbol:
+                        comp_nm = ("\x036" + (ex_sym[sym_ind]['description'])
+                                   + "\x0f (" + symbol.replace("^", "") + ")")
+                        break
+            except IndexError:
+                # even lamer workaround for symbols with no company lookups
+                # (usually certain funds and B/C stocks)
+                if exc_sep == "":
+                    exc_sep = "US"
+                payload = {'exchange': exc_sep, 'token': token}
                 ex_url = requests.get(
-                    'https://finnhub.io/api/v1/stock/symbol', params=payload)
+                    'https://finnhub.io/api/v1/stock/symbol',
+                    params=payload)
                 ex_sym = ex_url.json()
                 try:
-                    for sym_ind in range(0, 200):
+                    for sym_ind in range(0, 20000):
                         search_sym = ex_sym[sym_ind]['symbol']
-                        if search_sym == symbol:
-                            comp_nm = "\x036" + (ex_sym[sym_ind]
-                                ['description']) + "\x0f (" + symbol.replace(
-                                "^", "") + ")"
+                        if search_sym == sym_sep:
+                            comp_nm = ("\x036" + (ex_sym[sym_ind]
+                                       ['description']) + ("\x0f (" +
+                                       search_sym + ")"))
                             break
                 except IndexError:
-                    # even lamer workaround for symbols with no company lookups
-                    # (usually certain funds and B/C stocks)
-                    if exc_sep == "":
-                        exc_sep = "US"
-                    payload = {'exchange': exc_sep, 'token': token}
-                    ex_url = requests.get(
-                        'https://finnhub.io/api/v1/stock/symbol',
-                        params=payload)
-                    ex_sym = ex_url.json()
-                    try:
-                        for sym_ind in range(0, 20000):
-                            search_sym = ex_sym[sym_ind]['symbol']
-                            if search_sym == sym_sep:
-                                comp_nm = "\x036" + (ex_sym[sym_ind]
-                                    ['description']) + (
-                                    "\x0f (" + search_sym + ")")
-                                break
-                    except IndexError:
-                            comp_nm = "\x036Special:\x0f " + symbol
+                    # dunno what this is, but we have a price
+                    comp_nm = "\x036Special:\x0f " + symbol
 
         # format prices, calculate change since close
         try:
             qu_ch = ((quote['c']) - (quote['pc']))
-        except KeyError:
+        except KeyError: # when all else fails, obviously user's fault
             irc.reply("Error 02: Invalid or unknown symbol or exchange")
             return
-        if quote['c'] < 1:
+        if quote['c'] < 1: # expand accuracy for penny stocks
             qu_rnd = "{:.4f}"
         else:
             qu_rnd = "{:.2f}"
@@ -160,7 +162,7 @@ class BeestStonks(callbacks.Plugin):
         else:
             qu_chpcst = "{:.0f}".format(qu_chpc)
         ch_pcren = (qu_chst + " (" +
-            qu_chpcst + "%)").replace("-", "")
+                    qu_chpcst + "%)").replace("-", "")
         if qu_ch > 0:
             ch_sym = "\x0303▲"
         elif qu_ch < 0:
@@ -168,10 +170,10 @@ class BeestStonks(callbacks.Plugin):
         else:
             ch_sym = "\x0302▰unch"
             ch_pcren = ""
- 
+
         # render final output
         irc.reply(comp_nm + bullet + qu_cur + ch_sym + ch_pcren + bullet +
-            qu_lo + " - " + qu_hi)
+                  qu_lo + " - " + qu_hi)
 
     stock = wrap(stock, ['somethingWithoutSpaces'])
 
