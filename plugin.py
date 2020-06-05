@@ -52,11 +52,10 @@ class BeestStonks(callbacks.Plugin):
         # fetch finnhub.io API key from plugin config
         token = self.registryValue("finnhubKey")
 
-        symbol = symbol.upper()
-        bullet = " \x036•\x0f "
+        bullet = " \x0303•\x0f "
 
         # make silly summary of popular market indices
-        if symbol == "INDICES":
+        if not symbol:
             ind_list = ['^DJI', '^IXIC', '^GSPC', '^FTSE', '^GDAXI', '^N225',
                         '^HSI']
             ind_name = ['DJIA', 'NASDAQ', 'S&P', 'FTSE', 'DAX', 'Nikkei',
@@ -87,6 +86,7 @@ class BeestStonks(callbacks.Plugin):
             return
 
         # match input with symbol, get price and company name
+        symbol = symbol.upper()
         payload = {'symbol': symbol, 'token': token}
         quote_url = requests.get('https://finnhub.io/api/v1/quote',
                                  params=payload)
@@ -175,7 +175,7 @@ class BeestStonks(callbacks.Plugin):
         irc.reply(comp_nm + bullet + qu_cur + ch_sym + ch_pcren + bullet +
                   qu_lo + " - " + qu_hi)
 
-    stock = wrap(stock, ['somethingWithoutSpaces'])
+    stock = wrap(stock, [optional('somethingWithoutSpaces')])
 
 Class = BeestStonks
 

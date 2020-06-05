@@ -13,11 +13,10 @@ Python 3, Limnoria, Requests, and a [Finnhub](https://finnhub.io) API key
 ```stock <symbol>```
 ```stock <symbol.exchange>```
 ```stock <^index>```
-
-`stock indices` will give you a summary of popular index prices.
+`stock` with no symbol will give you a summary of popular index prices.
 
 Exchange is optional, omitting it tends to lean toward US markets. Will do the
-best it can to fetch things like ETFs, ADRs, and B/C stocks gracefully.
+best it can to fetch things like ETFs, ADRs, OTCs, and B/C stocks gracefully.
 
 See `codes.txt` for useful symbols and exchanges.
 
