@@ -62,7 +62,6 @@ class BeestStonks(callbacks.Plugin):
                         'Hang Seng']
             ind_c_lst = []
             ind_pc_lst = []
-            ind_string = ''
             for ind_get in ind_list:
                 payload = {'symbol': ind_get, 'token': token}
                 ind_fetch = requests.get('https://finnhub.io/api/v1/quote',
@@ -71,6 +70,10 @@ class BeestStonks(callbacks.Plugin):
                 ind_c_lst.append(ind_dec['c'])
                 ind_pc_lst.append(ind_dec['pc'])
             for ind_index in range(0, 7):
+                try:
+                    ind_string = ind_string + bullet
+                except NameError:
+                    ind_string = ''
                 qu_cur = "{:.0f} ".format(ind_c_lst[ind_index])
                 qu_ch = ((ind_c_lst[ind_index]) - (ind_pc_lst[ind_index]))
                 qu_chst = "{:.0f}".format(qu_ch)
@@ -80,9 +83,9 @@ class BeestStonks(callbacks.Plugin):
                     ch_sym = ("\x0304▼" + qu_chst.replace("-", ""))
                 else:
                     ch_sym = "\x0302▰unch"
-                ind_string = (ind_string + bullet + "\x036" + ind_name[ind_index] +
+                ind_string = (ind_string + "\x036" + ind_name[ind_index] +
                               "\x0f " + qu_cur + ch_sym)
-            irc.reply("\x0303beestDex" + ind_string)
+            irc.reply(ind_string)
             return
 
         # match input with symbol, get price and company name
