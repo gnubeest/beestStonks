@@ -56,9 +56,17 @@ class BeestStonks(callbacks.Plugin):
         payload = {'base': in_cur, 'token': token}
         quote_url = requests.get('https://finnhub.io/api/v1/forex/rates',
                                  params=payload).json()
-        out_rate = quote_url['quote'][out_cur]
+        if not value:
+            value = 1
+        try:
+            out_rate = quote_url['quote'][out_cur]
+        except KeyError:
+            irc.error('Invalid ISO 4217 currency code')
+            return
         ex_conv = "{:.2f}".format(value * out_rate)
 
+        cur_end = ''
+        cur_sep = '.'
         if out_cur in ('XCD', 'AUD', 'BSD', 'BBD', 'BZD', 'BMD', 'BND',
                        'SGD', 'CAD', 'KYD', 'XCD', 'USD', 'FJD', 'XCD',
                        'GYD', 'HKD', 'JMD', 'KID', 'AUD', 'LRD', 'NAD',
@@ -84,12 +92,18 @@ class BeestStonks(callbacks.Plugin):
             cur_sym = '₫'
         elif out_cur in ('PHP'):
             cur_sym = '₱'
+        elif out_cur in ('NOK', 'SEK'):
+            cur_sym = ''
+            cur_end = ' kr'
+            cur_sep = ','
         else:
             cur_sym = out_cur
 
-        irc.reply(cur_sym + ex_conv)
+        ex_conv = str(ex_conv).replace('.', cur_sep)
 
-    forex = wrap(forex, ["float", "somethingWithoutSpaces",
+        irc.reply(cur_sym + ex_conv + cur_end)
+
+    forex = wrap(forex, [optional("float"), "somethingWithoutSpaces",
                          "somethingWithoutSpaces"])
 
     def stock(self, irc, msg, args, symbol):
