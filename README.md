@@ -20,6 +20,6 @@ best it can to fetch things like ETFs, ADRs, OTCs, and B/C stocks gracefully.
 
 See `codes.txt` for useful symbols and exchanges.
 
-### todo
-
-Will get around to crypto markets and easy access to futures eventually.
+```forex <amount> <from currency> <to currency```
+Basic currency conversion based on current exchange rates. Accepts ISO 4217
+currency codes.

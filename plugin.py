@@ -40,9 +40,57 @@ except ImportError:
     # without the i18n module
     _ = lambda x: x
 
+bullet = " \x0303•\x0f "
+
 class BeestStonks(callbacks.Plugin):
     """Retrieves market data from Finnhub"""
     pass
+
+    def forex(self, irc, msg, args, value, in_cur, out_cur):
+        """[<amount> <currency from> <currency to>]
+            Get foreign exchange rates..
+        """
+        token = self.registryValue("finnhubKey")
+        in_cur = in_cur.upper()
+        out_cur = out_cur.upper()
+        payload = {'base': in_cur, 'token': token}
+        quote_url = requests.get('https://finnhub.io/api/v1/forex/rates',
+                                 params=payload).json()
+        out_rate = quote_url['quote'][out_cur]
+        ex_conv = "{:.2f}".format(value * out_rate)
+
+        if out_cur in ('XCD', 'AUD', 'BSD', 'BBD', 'BZD', 'BMD', 'BND',
+                       'SGD', 'CAD', 'KYD', 'XCD', 'USD', 'FJD', 'XCD',
+                       'GYD', 'HKD', 'JMD', 'KID', 'AUD', 'LRD', 'NAD',
+                       'NZD', 'SBD', 'SRD', 'TWD', 'TTD', 'TVD', 'NIO',
+                       'WST', 'TOP', 'ARS'):
+            cur_sym = '$'
+        elif out_cur in ('GBP', 'EGP', 'SYP', 'SSP'):
+            cur_sym = '£'
+        elif out_cur in ('EUR'):
+            cur_sym = '€'
+        elif out_cur in ('JPY', 'CNY'):
+            cur_sym = '¥'
+        elif out_cur in ('CRC'):
+            cur_sym = '₡'
+        elif out_cur in ('XOF', 'BIF', 'XAF', 'CDF', 'KMF', 'XOF', 'DJF',
+                         'GNF', 'CHF', 'RWF'):
+            cur_sym = out_cur
+        elif out_cur in ('NGN'):
+            cur_sym = '₦'
+        elif out_cur in ('ILS'):
+            cur_sym = '₪'
+        elif out_cur in ('VND'):
+            cur_sym = '₫'
+        elif out_cur in ('PHP'):
+            cur_sym = '₱'
+        else:
+            cur_sym = out_cur
+
+        irc.reply(cur_sym + ex_conv)
+
+    forex = wrap(forex, ["float", "somethingWithoutSpaces",
+                         "somethingWithoutSpaces"])
 
     def stock(self, irc, msg, args, symbol):
         """[<symbol.exchange>]
@@ -51,8 +99,6 @@ class BeestStonks(callbacks.Plugin):
 
         # fetch finnhub.io API key from plugin config
         token = self.registryValue("finnhubKey")
-
-        bullet = " \x0303•\x0f "
 
         # make silly summary of popular market indices
         if not symbol:
