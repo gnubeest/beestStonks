@@ -168,7 +168,7 @@ class BeestStonks(callbacks.Plugin):
             exc_sep = ""
 
         try:
-            comp_nm = "\x036" + (company['exchange']) + ":\x0f " + (
+            comp_nm = "\x0303▶\x036\x02" + (company['exchange']) + ":\x0f " + (
                 company['name']) + " (" + sym_sep + ")"
         except KeyError:
             # lame workaround to fetch market index names
@@ -180,7 +180,7 @@ class BeestStonks(callbacks.Plugin):
                 for sym_ind in range(0, 200):
                     search_sym = ex_sym[sym_ind]['symbol']
                     if search_sym == symbol:
-                        comp_nm = ("\x036" + (ex_sym[sym_ind]['description'])
+                        comp_nm = ("\x0303▶\x0306\x02" + (ex_sym[sym_ind]['description'])
                                    + "\x0f (" + symbol.replace("^", "") + ")")
                         break
             except IndexError:
@@ -197,7 +197,7 @@ class BeestStonks(callbacks.Plugin):
                     for sym_ind in range(0, 20000):
                         search_sym = ex_sym[sym_ind]['symbol']
                         if search_sym == sym_sep:
-                            comp_nm = ("\x036" + (ex_sym[sym_ind]
+                            comp_nm = ("\x0303▶\x0306\x02" + (ex_sym[sym_ind]
                                        ['description']) + ("\x0f (" +
                                        search_sym + ")"))
                             break
@@ -236,7 +236,7 @@ class BeestStonks(callbacks.Plugin):
 
         # render final output
         irc.reply(comp_nm + bullet + qu_cur + ch_sym + ch_pcren + bullet +
-                  qu_lo + " - " + qu_hi)
+                  qu_lo + " - " + qu_hi, prefixNick=False)
 
     stock = wrap(stock, [optional('somethingWithoutSpaces')])
 
