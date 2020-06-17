@@ -193,7 +193,7 @@ class BeestStonks(callbacks.Plugin):
                         if search_sym == symbol:
                             comp_nm = ("\x0303▶\x0306\x02" + (no_sym[sym_ind]
                                        ['description']) + ("\x0f (" +
-                                       sym_sep + ")"))
+                                       symbol + ")"))
                             break
                 except IndexError:
                     # dunno what this is, but we have a price
