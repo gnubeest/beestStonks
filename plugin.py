@@ -29,7 +29,6 @@
 ###
 
 import requests
-import datetime
 
 from supybot import utils, plugins, ircutils, callbacks
 from supybot.commands import *
@@ -201,19 +200,29 @@ class BeestStonks(callbacks.Plugin):
         if name != '':
             name = (' ' + name + bul)
         else:
-            if exc_sep == "":
-                exc_sep = "US"
-            payload = {'exchange': exc_sep, 'token': token}
-            no_sym = requests.get('https://finnhub.io/api/v1/stock/symbol',
+            payload = {'exchange': 'indices', 'token': token}
+            ex_sym = requests.get('https://finnhub.io/api/v1/stock/symbol',
                                   params=payload).json()
             try:
-                for sym_ind in range(0, (len(no_sym) + 1)):
-                    search_sym = no_sym[sym_ind]['symbol']
+                for sym_ind in range(0, (len(ex_sym) + 1)):
+                    search_sym = ex_sym[sym_ind]['symbol']
                     if search_sym == symbol:
-                        name = (' ' + no_sym[sym_ind]['description'] + bul)
+                        sym_sep = (ex_sym[sym_ind]['description'] + bul)
                         break
             except IndexError:
-                name = ('\x0F' + bul)
+                if exc_sep == "":
+                    exc_sep = "US"
+                payload = {'exchange': exc_sep, 'token': token}
+                no_sym = requests.get('https://finnhub.io/api/v1/stock/symbol',
+                                      params=payload).json()
+                try:
+                    for sym_ind in range(0, (len(no_sym) + 1)):
+                        search_sym = no_sym[sym_ind]['symbol']
+                        if search_sym == symbol:
+                            name = (' ' + no_sym[sym_ind]['description'] + bul)
+                            break
+                except IndexError:
+                    name = ('\x0F' + bul)
 
         # render final output
         irc.reply('\x0303▶' + '\x0306\x02' + sym_sep + '\x0F\x0303\x1D' +
