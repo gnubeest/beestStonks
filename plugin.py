@@ -29,6 +29,7 @@
 ###
 
 import requests
+import datetime
 
 from supybot import utils, plugins, ircutils, callbacks
 from supybot.commands import *
@@ -162,7 +163,7 @@ class BeestStonks(callbacks.Plugin):
                              params=payload).json()
         qu_c = quote.get('c')
         if qu_c == 0:
-            irc.error('oops')
+            irc.error('Symbol or quote not found for \x0306' + symbol)
             return
         qu_pc = quote.get('pc') 
         qu_hi = quote.get('h')
@@ -200,13 +201,24 @@ class BeestStonks(callbacks.Plugin):
         if name != '':
             name = (' ' + name + bul)
         else:
-            name = ('\x0F' + bul)
+            if exc_sep == "":
+                exc_sep = "US"
+            payload = {'exchange': exc_sep, 'token': token}
+            no_sym = requests.get('https://finnhub.io/api/v1/stock/symbol',
+                                  params=payload).json()
+            try:
+                for sym_ind in range(0, (len(no_sym) + 1)):
+                    search_sym = no_sym[sym_ind]['symbol']
+                    if search_sym == symbol:
+                        name = (' ' + no_sym[sym_ind]['description'] + bul)
+                        break
+            except IndexError:
+                name = ('\x0F' + bul)
 
         # render final output
         irc.reply('\x0303▶' + '\x0306\x02' + sym_sep + '\x0F\x0303\x1D' +
-                  name + qu_c + ' ' + ch_sym + ch_pcren +
-                  bul + qu_lo + " - " + qu_hi
-                  + exchange, prefixNick=False)
+                  name + qu_c + ' ' + ch_sym + ch_pcren + bul + qu_lo + "-" +
+                  qu_hi + exchange, prefixNick=False)
 
     stock = wrap(stock, [optional('somethingWithoutSpaces')])
 
