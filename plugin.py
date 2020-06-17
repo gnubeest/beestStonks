@@ -124,9 +124,8 @@ class BeestStonks(callbacks.Plugin):
             ind_pc_lst = []
             for ind_get in ind_list:
                 payload = {'symbol': ind_get, 'token': token}
-                ind_fetch = requests.get('https://finnhub.io/api/v1/quote',
-                                         params=payload)
-                ind_dec = ind_fetch.json()
+                ind_dec = requests.get('https://finnhub.io/api/v1/quote',
+                                       params=payload).json()
                 ind_c_lst.append(ind_dec['c'])
                 ind_pc_lst.append(ind_dec['pc'])
             for ind_index in range(0, 7):
@@ -151,12 +150,10 @@ class BeestStonks(callbacks.Plugin):
         # match input with symbol, get price and company name
         symbol = symbol.upper()
         payload = {'symbol': symbol, 'token': token}
-        quote_url = requests.get('https://finnhub.io/api/v1/quote',
-                                 params=payload)
-        company_url = requests.get(
-            'https://finnhub.io/api/v1/stock/profile2', params=payload)
-        quote = quote_url.json()
-        company = company_url.json()
+        quote = requests.get('https://finnhub.io/api/v1/quote',
+                             params=payload).json()
+        company = requests.get('https://finnhub.io/api/v1/stock/profile2',
+                               params=payload).json()
 
         # separate symbol and exchange from input for display
         # also so workarounds don't break and for later features
@@ -173,11 +170,10 @@ class BeestStonks(callbacks.Plugin):
         except KeyError:
             # lame workaround to fetch market index names
             payload = {'exchange': 'indices', 'token': token}
-            ex_url = requests.get(
-                'https://finnhub.io/api/v1/stock/symbol', params=payload)
-            ex_sym = ex_url.json()
+            ex_sym = requests.get('https://finnhub.io/api/v1/stock/symbol',
+                                  params=payload).json()
             try:
-                for sym_ind in range(0, 200):
+                for sym_ind in range(0, (len(ex_sym) + 1)):
                     search_sym = ex_sym[sym_ind]['symbol']
                     if search_sym == symbol:
                         comp_nm = ("\x0303▶\x0306\x02" + (ex_sym[sym_ind]['description'])
@@ -189,26 +185,27 @@ class BeestStonks(callbacks.Plugin):
                 if exc_sep == "":
                     exc_sep = "US"
                 payload = {'exchange': exc_sep, 'token': token}
-                ex_url = requests.get(
-                    'https://finnhub.io/api/v1/stock/symbol',
-                    params=payload)
-                ex_sym = ex_url.json()
+                no_sym = requests.get('https://finnhub.io/api/v1/stock/symbol',
+                                      params=payload).json()
                 try:
-                    for sym_ind in range(0, 20000):
-                        search_sym = ex_sym[sym_ind]['symbol']
-                        if search_sym == sym_sep:
-                            comp_nm = ("\x0303▶\x0306\x02" + (ex_sym[sym_ind]
+                    for sym_ind in range(0, (len(no_sym) + 1)):
+                        search_sym = no_sym[sym_ind]['symbol']
+                        if search_sym == symbol:
+                            comp_nm = ("\x0303▶\x0306\x02" + (no_sym[sym_ind]
                                        ['description']) + ("\x0f (" +
-                                       search_sym + ")"))
+                                       sym_sep + ")"))
                             break
                 except IndexError:
                     # dunno what this is, but we have a price
-                    comp_nm = "\x036Special:\x0f " + symbol
+                    comp_nm = "\x0303▶\x0306\x02Special:\x0f " + symbol
 
         # format prices, calculate change since close
         try:
             qu_ch = ((quote['c']) - (quote['pc']))
         except KeyError: # when all else fails, obviously user's fault
+            irc.reply("Error 02: Invalid or unknown symbol or exchange")
+            return
+        if quote['c'] == 0:
             irc.reply("Error 02: Invalid or unknown symbol or exchange")
             return
         if quote['c'] < 1: # expand accuracy for penny stocks
