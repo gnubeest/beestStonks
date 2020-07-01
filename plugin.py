@@ -40,7 +40,7 @@ except ImportError:
     # without the i18n module
     _ = lambda x: x
 
-bul = " \x0303•\x0f "
+bul = " \x0303•\x0F "
 
 class BeestStonks(callbacks.Plugin):
     """Retrieves market data from Finnhub"""
@@ -96,6 +96,10 @@ class BeestStonks(callbacks.Plugin):
             cur_sym = ''
             cur_end = ' kr'
             cur_sep = ','
+        elif out_cur in ('PLN'):
+            cur_sym = ''
+            cur_end = ' zł'
+            cur_sep = ','
         else:
             cur_sym = out_cur
 
@@ -144,12 +148,13 @@ class BeestStonks(callbacks.Plugin):
                     ch_sym = "\x0302▰unch"
                 ind_string = (ind_string + "\x036" + ind_name[ind_index] +
                               "\x0f " + qu_cur + ch_sym)
-            irc.reply(ind_string)
+            irc.reply(ind_string, prefixNick=False)
             return
 
         # separate symbol and exchange from input for display
         # also so workarounds don't break and for later features
         symbol = symbol.upper()
+        symbol2 = symbol.replace("=", "&#61;")
         if symbol.rfind('.') != -1:
             sym_sep = symbol[:symbol.rfind('.')]
             exc_sep = symbol[(symbol.rfind('.') + 1):]
@@ -157,11 +162,12 @@ class BeestStonks(callbacks.Plugin):
             sym_sep = symbol
             exc_sep = ""
 
-        payload = {'symbol': symbol, 'token': token}
-        quote = requests.get('https://finnhub.io/api/v1/quote',
+        payload = {'token': token}
+        quote = requests.get('https://finnhub.io/api/v1/quote?symbol='
+                             + symbol2,
                              params=payload).json()
         qu_c = quote.get('c')
-        if qu_c == 0:
+        if not qu_c :
             irc.error('Symbol or quote not found for \x0306' + symbol)
             return
         qu_pc = quote.get('pc') 
@@ -191,6 +197,7 @@ class BeestStonks(callbacks.Plugin):
             ch_sym = "\x0302▰unch"
             ch_pcren = ""
 
+        payload = {'symbol': symbol, 'token': token}
         company = requests.get('https://finnhub.io/api/v1/stock/profile2',
                                params=payload).json()
         exchange = company.get('exchange', '')
@@ -226,8 +233,8 @@ class BeestStonks(callbacks.Plugin):
 
         # render final output
         irc.reply('\x0303▶' + '\x0306\x02' + sym_sep + '\x0F\x0303\x1D' +
-                  name + qu_c + ' ' + ch_sym + ch_pcren + bul + qu_lo + "-" +
-                  qu_hi + exchange, prefixNick=False)
+                  name + '\x0F' + qu_c + ' ' + ch_sym + ch_pcren + bul +
+                  qu_lo + "-" + qu_hi + exchange, prefixNick=False)
 
     stock = wrap(stock, [optional('somethingWithoutSpaces')])
 
