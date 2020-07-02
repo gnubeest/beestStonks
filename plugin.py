@@ -29,7 +29,7 @@
 ###
 
 import requests
-
+import re
 from supybot import utils, plugins, ircutils, callbacks
 from supybot.commands import *
 try:
@@ -154,7 +154,8 @@ class BeestStonks(callbacks.Plugin):
         # separate symbol and exchange from input for display
         # also so workarounds don't break and for later features
         symbol = symbol.upper()
-        symbol2 = symbol.replace("=", "&#61;")
+        if symbol == 'ES=F':
+            symbol = 'ESU20.CME'
         if symbol.rfind('.') != -1:
             sym_sep = symbol[:symbol.rfind('.')]
             exc_sep = symbol[(symbol.rfind('.') + 1):]
@@ -162,9 +163,8 @@ class BeestStonks(callbacks.Plugin):
             sym_sep = symbol
             exc_sep = ""
 
-        payload = {'token': token}
-        quote = requests.get('https://finnhub.io/api/v1/quote?symbol='
-                             + symbol2,
+        payload = {'symbol': symbol, 'token': token}
+        quote = requests.get('https://finnhub.io/api/v1/quote',
                              params=payload).json()
         qu_c = quote.get('c')
         if not qu_c :
@@ -207,7 +207,7 @@ class BeestStonks(callbacks.Plugin):
         if name != '':
             name = (' ' + name + bul)
         else:
-            payload = {'exchange': 'indices', 'token': token}
+            payload = {'exchange': 'index', 'token': token}
             ex_sym = requests.get('https://finnhub.io/api/v1/stock/symbol',
                                   params=payload).json()
             try:
@@ -230,6 +230,9 @@ class BeestStonks(callbacks.Plugin):
                             break
                 except IndexError:
                     name = ('\x0F' + bul)
+
+        if symbol == 'ESU20.CME':
+            name = ' E-Mini S&P 500 Sep 20' + bul
 
         # render final output
         irc.reply('\x0303▶' + '\x0306\x02' + sym_sep + '\x0F\x0303\x1D' +
