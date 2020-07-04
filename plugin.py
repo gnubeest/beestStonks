@@ -120,10 +120,10 @@ class BeestStonks(callbacks.Plugin):
 
         # make silly summary of popular market indices
         if not symbol:
-            ind_list = ['^DJI', '^IXIC', '^GSPC', '^FTSE', '^GDAXI', '^N225',
-                        '^HSI']
-            ind_name = ['DJIA', 'NASDAQ', 'S&P', 'FTSE', 'DAX', 'Nikkei',
-                        'Hang Seng']
+            ind_list = ['^DJI', '^IXIC', '^GSPC', '^FTSE', '^GDAXI',
+                        'OBX.OL', '^N225', '^HSI']
+            ind_name = ['DJIA', 'NASDAQ', 'S&P', 'FTSE', 'DAX', 'OBX',
+                        'Nikkei', 'Hang Seng']
             ind_c_lst = []
             ind_pc_lst = []
             for ind_get in ind_list:
@@ -132,7 +132,7 @@ class BeestStonks(callbacks.Plugin):
                                        params=payload).json()
                 ind_c_lst.append(ind_dec['c'])
                 ind_pc_lst.append(ind_dec['pc'])
-            for ind_index in range(0, 7):
+            for ind_index in range(0, 8):
                 try:
                     ind_string = ind_string + bul
                 except NameError:
@@ -214,7 +214,7 @@ class BeestStonks(callbacks.Plugin):
                 for sym_ind in range(0, (len(ex_sym) + 1)):
                     search_sym = ex_sym[sym_ind]['symbol']
                     if search_sym == symbol:
-                        sym_sep = (ex_sym[sym_ind]['description'] + bul)
+                        sym_sep = (ex_sym[sym_ind]['description'] + '\x0F' + bul)
                         break
             except IndexError:
                 if exc_sep == "":
