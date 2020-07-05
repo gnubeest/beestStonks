@@ -25,5 +25,5 @@ See `codes.txt` for useful symbols and exchanges.
 Basic currency conversion based on current exchange rates. Accepts ISO 4217
 currency codes.
 
-```crypto <exchange:symbol>```
+```crypto <exchange> <symbol>```
 Retrives current prices from crypto exchanges.

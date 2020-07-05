@@ -48,31 +48,30 @@ class BeestStonks(callbacks.Plugin):
     pass
 
 
-    def crypto(self, irc, msg, args, symbol):
-        """[<exchange:symbol>]
+    def crypto(self, irc, msg, args, exchange, symbol):
+        """[<exchange> <symbol>]
             Get current cryptocurrency prices.
         """
 
+        exchange = exchange.upper()
         symbol = symbol.upper() 
-
-        if symbol.rfind(':') != -1:
-            exc_sep = symbol[:symbol.rfind(':')]
-            sym_sep = symbol[(symbol.rfind(':') + 1):]
-        else:
-            irc.reply('Queries must be sent in EXCHANGE:SYMBOL format.')
-            return
+        if exchange == "BINANCE":
+            symbol = symbol.replace("/", "")
+        if exchange == "COINBASE":
+            symbol = symbol.replace("/", "-")
+        sym_send = (exchange + ":" + symbol)
 
         token = self.registryValue("finnhubKey")
         to_stamp = int(time.time())
         from_stamp = (to_stamp - 86400)
-        payload = {'symbol': symbol, 'resolution': 'D', 'from': from_stamp,
+        payload = {'symbol': sym_send, 'resolution': 'D', 'from': from_stamp,
                    'to': to_stamp, 'token': token}
         cryp_day = requests.get('https://finnhub.io/api/v1/crypto/candle',
                                  params=payload).json()
         try:
             o_day = cryp_day['o'][0]
         except KeyError:
-            irc.error('Symbol or quote not found for \x0306' + symbol)
+            irc.error('Symbol or quote not found for \x0306' + sym_send)
             return
         h_day = cryp_day['h'][0]
         l_day = cryp_day['l'][0]
@@ -94,26 +93,26 @@ class BeestStonks(callbacks.Plugin):
             ch_sym = "\x0302▰unch"
             ch_pcren = ""
 
-        payload = {'exchange': exc_sep, 'token': token} 
+        payload = {'exchange': exchange, 'token': token} 
         cryp_exc = requests.get('https://finnhub.io/api/v1/crypto/symbol',
                                  params=payload).json()
 
         try:
             for sym_ind in range(0, (len(cryp_exc) + 1)):
                 search_sym = cryp_exc[sym_ind]['symbol']
-                if search_sym == symbol:
+                if search_sym == sym_send:
                     cryp_desc = (cryp_exc[sym_ind]['description'] + '\x0F' + bul)
                     break
         except IndexError:
-            cryp_desc = (symbol + '\x0F' + bul)
+            cryp_desc = (sym_send + '\x0F' + bul)
 
         cr_str = ('\x0303▶\x0306\x02' + cryp_desc + str(c_day) + bul +
                   ch_sym + pcren + '\x0F from ' + str(o_day) +
-                  ' at \x030300:00 UTC\x0F')
+                  ' yesterday')
 
         irc.reply(cr_str, prefixNick=False)
 
-    crypto = wrap(crypto, [optional('somethingWithoutSpaces')])
+    crypto = wrap(crypto, ['somethingWithoutSpaces', 'somethingWithoutSpaces'])
 
 
     def forex(self, irc, msg, args, value, in_cur, out_cur):
