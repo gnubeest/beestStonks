@@ -28,6 +28,7 @@
 
 ###
 
+import time
 import requests
 import re
 from supybot import utils, plugins, ircutils, callbacks
@@ -45,6 +46,75 @@ bul = " \x0303•\x0F "
 class BeestStonks(callbacks.Plugin):
     """Retrieves market data from Finnhub"""
     pass
+
+
+    def crypto(self, irc, msg, args, symbol):
+        """[<exchange:symbol>]
+            Get current cryptocurrency prices.
+        """
+
+        symbol = symbol.upper() 
+
+        if symbol.rfind(':') != -1:
+            exc_sep = symbol[:symbol.rfind(':')]
+            sym_sep = symbol[(symbol.rfind(':') + 1):]
+        else:
+            irc.reply('Queries must be sent in EXCHANGE:SYMBOL format.')
+            return
+
+        token = self.registryValue("finnhubKey")
+        to_stamp = int(time.time())
+        from_stamp = (to_stamp - 86400)
+        payload = {'symbol': symbol, 'resolution': 'D', 'from': from_stamp,
+                   'to': to_stamp, 'token': token}
+        cryp_day = requests.get('https://finnhub.io/api/v1/crypto/candle',
+                                 params=payload).json()
+        try:
+            o_day = cryp_day['o'][0]
+        except KeyError:
+            irc.error('Symbol or quote not found for \x0306' + symbol)
+            return
+        h_day = cryp_day['h'][0]
+        l_day = cryp_day['l'][0]
+        c_day = cryp_day['c'][0]
+
+        ch = (c_day - o_day)
+        chpc = ((ch / o_day) * 100)
+        if abs(chpc) < 0.9:
+            chpcst = "{:.1f}".format(chpc)
+        else:
+            chpcst = "{:.0f}".format(chpc)
+        pcren = ("{:.2f}".format(ch) + " (" +
+                    chpcst + "%)").replace("-", "")
+        if ch > 0:
+            ch_sym = "\x0303▲"
+        elif ch < 0:
+            ch_sym = "\x0304▼"
+        else:
+            ch_sym = "\x0302▰unch"
+            ch_pcren = ""
+
+        payload = {'exchange': exc_sep, 'token': token} 
+        cryp_exc = requests.get('https://finnhub.io/api/v1/crypto/symbol',
+                                 params=payload).json()
+
+        try:
+            for sym_ind in range(0, (len(cryp_exc) + 1)):
+                search_sym = cryp_exc[sym_ind]['symbol']
+                if search_sym == symbol:
+                    cryp_desc = (cryp_exc[sym_ind]['description'] + '\x0F' + bul)
+                    break
+        except IndexError:
+            cryp_desc = (symbol + '\x0F' + bul)
+
+        cr_str = ('\x0303▶\x0306\x02' + cryp_desc + str(c_day) + bul +
+                  ch_sym + pcren + '\x0F from ' + str(o_day) +
+                  ' at \x030300:00 UTC\x0F')
+
+        irc.reply(cr_str, prefixNick=False)
+
+    crypto = wrap(crypto, [optional('somethingWithoutSpaces')])
+
 
     def forex(self, irc, msg, args, value, in_cur, out_cur):
         """[<amount> <currency from> <currency to>]
@@ -154,8 +224,11 @@ class BeestStonks(callbacks.Plugin):
         # separate symbol and exchange from input for display
         # also so workarounds don't break and for later features
         symbol = symbol.upper()
+
+        # add some symbol aliases
         if symbol == 'ES=F':
             symbol = 'ESU20.CME'
+
         if symbol.rfind('.') != -1:
             sym_sep = symbol[:symbol.rfind('.')]
             exc_sep = symbol[(symbol.rfind('.') + 1):]
@@ -197,6 +270,7 @@ class BeestStonks(callbacks.Plugin):
             ch_sym = "\x0302▰unch"
             ch_pcren = ""
 
+        # attempt to find pretty symbol names
         payload = {'symbol': symbol, 'token': token}
         company = requests.get('https://finnhub.io/api/v1/stock/profile2',
                                params=payload).json()
@@ -231,9 +305,16 @@ class BeestStonks(callbacks.Plugin):
                 except IndexError:
                     name = ('\x0F' + bul)
 
+        # add some display names for things the API can't find
         if symbol == 'ESU20.CME':
             name = ' E-Mini S&P 500 Sep 20' + bul
+        if symbol == 'OBX.OL':
+            name = ' OBX Total Return Index' + bul
 
+        if exchange == '':
+            if exc_sep != '':
+                exchange = ('\x0314 (' + exc_sep + ')')
+            
         # render final output
         irc.reply('\x0303▶' + '\x0306\x02' + sym_sep + '\x0F\x0303\x1D' +
                   name + '\x0F' + qu_c + ' ' + ch_sym + ch_pcren + bul +
