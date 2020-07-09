@@ -24,6 +24,3 @@ See `codes.txt` for useful symbols and exchanges.
 ```forex <amount> <from currency> <to currency```
 Basic currency conversion based on current exchange rates. Accepts ISO 4217
 currency codes.
-
-```crypto <exchange> <symbol>```
-Retrives current prices from crypto exchanges.
